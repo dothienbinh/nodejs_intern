@@ -9,21 +9,30 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       MaNV: {
-        type: Sequelize.STRING
+        allowNull: false,
+        type: Sequelize.STRING,
+        unique: true
       },
       FirstName: {
         type: Sequelize.STRING
       },
       LastName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,        
       },
       Email: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        validate: {
+          isEmail: true,
+        }
+        
       },
       UserName: {
-        type: Sequelize.STRING
+        allowNull: false,
+        type: Sequelize.STRING,
+        unique: true
       },
       Password: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       Position: {
@@ -51,8 +60,15 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       Role: {
+        allowNull: false,
         type: Sequelize.INTEGER
-      },      
+      },
+      RefreshToken: {
+        type: Sequelize.STRING
+      },
+      deletedAt: {        
+        type: Sequelize.DATE
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -60,7 +76,7 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
     });
   },
   down: async (queryInterface, Sequelize) => {

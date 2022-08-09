@@ -2,6 +2,7 @@ import express from 'express';
 import usersController from '../controller/usersController';
 import multer from 'multer';
 import path from 'path';
+import checkAuth from '../middleware/checkAuth';
 var appRoot = require('app-root-path');
 const router = express.Router();
 
@@ -32,10 +33,25 @@ let upload = multer({ storage: storage, fileFilter: imageFilter });
 
 
 router.post('/login', usersController.loginUser);
-router.post('/createUser', usersController.createUser);
-router.post('/deleteUser', usersController.deleteUser);
-router.post('/upload-profile-pic', upload.single('avatar'), usersController.handleUploadFile)
-router.get('/userInfo', usersController.getInfoUser);
+//admin
+router.post('/createUser', checkAuth.checkRole(3), usersController.createUser);
+// HR Drirector Admin
+router.delete('/deleteUser', checkAuth.checkRole(2), usersController.deleteUser);
+//admin
+router.delete('/destroyUser', checkAuth.checkRole(3), usersController.destroyUser);
+//admin
+router.get('/userInfo', checkAuth.checkRole(3), usersController.getInfoUser);
+// update not image - not admin - verifyUser
+router.get('/:id/edit', checkAuth.checkRole(0), usersController.editUser);
+// update not image - not admin - verifyUser
+router.put('/:id/updateUser', checkAuth.checkRole(0), usersController.updateUser);
+// update image - verifyUser
+router.put('/:id/updateImage', checkAuth.checkRole(0), upload.single('avatar'), usersController.updateImage)
+// get all user exist deletedAt: null
+// router.get('/AllUserExist', checkAuth.checkRole(2), usersController.getAllUserExist);
+router.get('/AllUserExist', usersController.getAllUserExist);
+// admin deletedAt: not null
+// router.get('/', checkAuth.checkRole(3), usersController.getAllUser);
 router.get('/', usersController.getAllUser);
 
 module.exports = router;

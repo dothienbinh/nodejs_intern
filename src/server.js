@@ -4,11 +4,13 @@ import initWebRoute from "./route/";
 import connectDB from "./configs/connectDB";
 import multer from 'multer';
 import bodyParser from 'body-parser';
+import cookies from 'cookie-parser';
 require('dotenv').config();
 
 const app = express()
 const port = process.env.PORT || 8080;
 
+app.use(cookies());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

@@ -25,7 +25,11 @@ module.exports = {
       },
       IDCreator: {
         type: Sequelize.INTEGER
-      },         
+      },
+      deletedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },        
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

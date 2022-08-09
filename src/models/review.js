@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Review.belongsTo(models.User, {foreignKey: 'IDNv', as: 'Review_idNv_User'})
     }
   };
   Review.init({
@@ -24,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Review',
+    paranoid: true,
+    timestamps: true,
+    deletedAt: 'deletedAt',
   });
   return Review;
 };

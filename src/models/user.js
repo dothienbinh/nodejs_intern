@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.hasMany(models.Job, {foreignKey: 'IDNv', as: 'IDNv_Job'})
+      User.hasMany(models.Review, {foreignKey: 'IDNv', as: 'IDNv_Review'});
     }
   };
   User.init({
@@ -26,12 +28,16 @@ module.exports = (sequelize, DataTypes) => {
     Gender: DataTypes.STRING,
     CMND: DataTypes.STRING,
     BHXH: DataTypes.STRING,
-    Address: DataTypes.STRING,
+    Address: DataTypes.STRING, 
     ManagerID: DataTypes.INTEGER,
     Role: DataTypes.INTEGER,
+    RefreshToken: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'User',
+    paranoid: true,
+    timestamps: true,
+    deletedAt: 'deletedAt',
   });
   return User;
 };
