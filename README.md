@@ -45,4 +45,4 @@ User
 
 ## database
 
-![ImgDb](https://github.com/dothienbinh/nodejs_intern/issues/1#issue-1334185404)
+![ImgDb](https://user-images.githubusercontent.com/84229533/183838622-a5cc47ed-fb7e-4e37-9c66-3685dc16e7e4.png)
