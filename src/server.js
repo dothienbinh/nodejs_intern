@@ -5,6 +5,8 @@ import connectDB from "./configs/connectDB";
 import multer from 'multer';
 import bodyParser from 'body-parser';
 import cookies from 'cookie-parser';
+import handleHttpErrors from './middleware/errorHandler';
+import swaggerConfig from './configs/apidocs/apidocs.config';
 require('dotenv').config();
 
 const app = express()
@@ -19,9 +21,14 @@ app.use(express.static(publicDir));
 
 configViewEngine(app);
 initWebRoute(app);
+app.use(handleHttpErrors);
 console.log('...check');
 
 connectDB();
+
+swaggerConfig(app, '/apidocs', 'v1');
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

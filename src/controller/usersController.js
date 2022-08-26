@@ -32,21 +32,19 @@ let handleUploadFile = async (req, res) => {
     });
 }
 
-let loginUser = async (req, res) => {
+let loginUser = async (req, res, next) => {
 
     if(!req.body.UserName || !req.body.Password) {
         
-        return res.status(500).json({
-            errCode: 1,
-            message: 'login fail',
-        })
+        const err = new Error('UserName or Password is not correct');
+        err.statusCode = 400;
+        return next(err);
     }
 
     if(req.cookies.ACCESS_TOKEN) {
-        return res.status(500).json({
-            errCode: 5,
-            message: 'login fail',
-        })
+        const err = new Error('session login exist');
+        err.statusCode = 400;
+        return next(err);
     }
 
     let userData = await userService.loginUser(req.body.UserName, req.body.Password);

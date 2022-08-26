@@ -41,8 +41,8 @@ let loginUser = async (UserName, Password) => {
                     userData.errMessage = `User not found`;
                 }
             } else {
-                userData.errCode = 1;
-                userData.errMessage = 'UserName Err';
+                userData.errCode = 400;
+                userData.errMessage = 'UserName or Password is not correct';
             }
             resolve(userData);
         } catch (e) {
