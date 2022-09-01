@@ -2,7 +2,10 @@ import db from '../models/index';
 import bcrypt from 'bcryptjs';
 // const { QueryTypes } = require('sequelize');
 import { resolve } from 'app-root-path';
-const { Op,QueryTypes } = require("sequelize");
+const { Op,QueryTypes, ValidationError } = require("sequelize");
+import { StatusCodes } from 'http-status-codes';
+import HttpErrors from '../libs/error/httpErrors';
+import { statusError } from '../libs/error/statusError';
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -27,13 +30,14 @@ let loginUser = async (UserName, Password) => {
                     // check password
                     let comparePassword = await bcrypt.compareSync(Password, user.Password);
                     if(comparePassword) {
+                        // password = password_user
                         userData.errCode = 0;
                         userData.errMessage = 'OK'
                         userData.user = user;
                     } else {
                         // password wrong
                         userData.errCode = 3;
-                        userData.errMessage = 'wrong password';
+                        userData.errMessage = 'wrong password or username';
                     }
                 } else {
                     // UserName err
@@ -41,12 +45,17 @@ let loginUser = async (UserName, Password) => {
                     userData.errMessage = `User not found`;
                 }
             } else {
-                userData.errCode = 400;
+                userData.errCode = 1;
                 userData.errMessage = 'UserName or Password is not correct';
             }
             resolve(userData);
         } catch (e) {
-            reject(e)
+            let dbErr = HttpErrors.IODataBase(e.message ? e.message: null );
+            if(e instanceof ValidationError) {
+                dbErr.setStatusCode = StatusCodes.CONFLICT;
+                dbErr.setStatusError = statusError(StatusCodes.CONFLICT);
+            }
+            reject(dbErr)
         }
     })
 }
@@ -91,7 +100,7 @@ let getInfoUser = async (id) => {
                 where: {id: id},
                 attributes: {
                     // include: ['FirstName', 'LastName', 'Email', 'Position', 'Phone', 'Avatar'],
-                    exclude: ['UserName', 'Password', 'BHXH'],
+                    exclude: ['UserName', 'Password',"CMND", 'BHXH'],
                 },
                 raw: true,
             });
@@ -123,22 +132,27 @@ let createUser = async (data) => {
                 Email: data.Email,
                 UserName: data.UserName,
                 Password: hashPasswordFromBcrypt,
-                Phone: data.Phone,
+                Position: data.Position,
+                Phone: data.Phone ? data.Phone : null,
                 Gender: data.Gender == '1' ? true : false,
-                CMND: data.CMND,
-                BHXH: data.BHXH,
-                Address: data.Address,
+                CMND:  data.CMND ? data.CMND : null,
+                BHXH: data.BHXH ? data.BHXH : null,
+                Address: data.Address ? data.Address : null,
                 ManagerID: data.ManagerID ? data.ManagerID : null,
                 Role: data.Role,
             })
             let dataUser ={};
             dataUser.user = user;
-            // data.errCode = 0;
-            dataUser.errMessage = 'create successfully';
+            data.Code = 0;
+            dataUser.Message = 'create successfully';
             resolve(dataUser);
         } catch (e) {
-            
-            reject(e.errors[0].message)
+            let dbErr = HttpErrors.IODataBase(e.message ? e.message: null );
+            if(e instanceof ValidationError) {
+                dbErr.setStatusCode = StatusCodes.CONFLICT;
+                dbErr.setStatusError = statusError(StatusCodes.CONFLICT);
+            }
+            reject(dbErr)
         }
     })
 }
@@ -239,7 +253,7 @@ let getEditUser = async (id) => {
                 },
                 attributes: {
                     // include: ['FirstName', 'LastName', 'Email', 'Position', 'Phone', 'Avatar'],
-                    exclude: ['id', 'UserName', 'Password', 'BHXH', 'Role', 'createdAt', 'updatedAt', 'deletedAt', 'ManagerID'],
+                    exclude: ['id', 'Password', 'Position', 'Role', 'createdAt', 'updatedAt', 'deletedAt', 'ManagerID'],
                 },
                 raw: true,
             });
@@ -297,12 +311,15 @@ let updateUser = async (data) =>{
                 },
                 raw: false,
             });
+            let passwordEncode = await bcrypt.hashSync(data.Password, salt);
             if(user) {
                 user.FirstName = data.FirstName;
                 user.LastName = data.LastName;
                 user.Email = data.Email;
+                user.UserName = data.UserName;
+                user.Password = passwordEncode;
                 user.Phone = data.Phone;
-                user.Gender = data.Gender;
+                user.Gender = data.Gender == '1' ? true : false;
                 user.CMND = data.CMND;
                 user.BHXH = data.BHXH;
                 user.Address = data.Address;
@@ -310,8 +327,8 @@ let updateUser = async (data) =>{
                 await user.save();
 
                 resolve({
-                    errCode: 0,
-                    errMessage: "update successfully!!!",
+                    Code: 0,
+                    Message: "update successfully!!!",
                 })
             } else {
                 resolve({

@@ -3,10 +3,12 @@ import checkAuth from '../middleware/checkAuth';
 import emailService from '../services/emailService';
 import userService from '../services/userService';
 import jwt from "jsonwebtoken";
+import HttpErrors from '../libs/error/httpErrors';
 
 
-let index = (req, res) => {
-    res.json('alo alo');
+let index = (req, res, next) => {
+    let err = HttpErrors.BadRequest();
+    return next(err);
 }
 
 let createJob = async (req, res) =>{

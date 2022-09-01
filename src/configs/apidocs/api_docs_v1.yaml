@@ -1,4 +1,4 @@
-swagger: "2.0"
+openapi: 3.0.1
 info:
   title: Human Resource Management System
   contact:
@@ -18,11 +18,607 @@ paths:
     post:
       tags:
         - users
-      summary: get all users
-      description: return all users
-      operationId: "addPet"
-      security:
-        - jwt: []
+      summary: login
+      description: compare Username Password
+      operationId: userlogin
+      requestBody:
+        description: Login body data
+        content:
+          application/json:
+            schema:
+              title: loginBody
+              required:
+                - UserName
+                - Password
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              example:
+                UserName: BinhDo
+                Password: "1234567"
+        required: true
       responses:
         200:
           description: OK
+          content:
+            application/json:
+              example:
+                status: true
+                data:
+                  ACCESS_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI5NTFhNzI2Mi1iNWUwLTRhZWYtYTg4My1iMTZiNmQyNWEzNmMiLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY1OTc3ODc2NCwiZXhwIjoxNjU5ODY1MTY0fQ.7_ZQnwvDzPURW7-3iT6yuhfOzcDIbx2Ue2IKcVqjis4
+                  REFRESH_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiTWFOViI6IkIxOERDQVQwMjIiLCJGaXJzdE5hbWUiOiJBIiwiTGFzdE5hbWUiOiJOZ3V5ZW4gVmFuIEEiLCJSb2xlIjozLCJpYXQiOjE2NjE4ODIxNDgsImV4cCI6MTY2MTg4NTc0OH0.Z39bCdz5NEpXJaNiCQGJ0wKwgR_ZIL7_dKp96EHy5bk
+        400:
+          description: Bad request
+          content:
+            application/json:
+              example:
+                errCode: [-1, 0, 1, 2]
+                status: fail
+                typeError: [Token Error, Database Error]
+                statusError: [Unauthorized, Forbidden, Bad Request]
+                message: Email or password incorrect!
+      security:
+        - ACCESS_TOKEN: []
+  /user/createUser:
+    post:
+      tags:
+        - users
+      summary: create User
+      description: Only user admin
+      operationId: userAdminCreateUser
+      requestBody:
+        description: field User
+        content:
+          application/json:
+            schema:
+              title: fieldUser
+              required:
+                - MaNV
+                - FirstName
+                - LastName
+                - Email
+                - UserName
+                - Password
+                - Position
+                - Role
+              type: object
+              properties:
+                MaNV:
+                  type: string
+                FirstName:
+                  type: string
+                LastName:
+                  type: string
+                Email:
+                  type: string
+                UserName:
+                  type: string
+                Password:
+                  type: string
+                Position:
+                  type: string
+                Phone:
+                  type: string
+                Gender:
+                  type: string
+                CMND:
+                  type: string
+                BHXH:
+                  type: string
+                Address:
+                  type: string
+                ManagerID:
+                  type: integer
+                Role:
+                  type: integer
+              example:
+                MaNV: B18DCAT122
+                FirstName: A
+                LastName: Nguyen Van
+                Email: nguyenvana@gmail.com
+                UserName: BinhDo122
+                Password: "1234567"
+                Position: inter
+                Phone: "1234567"
+                Gender: "0"
+                CMND: B1234567
+                BHXH: B1234567
+                Address: HaNoi
+                ManagerID: null
+                Role: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                data:
+                  {
+                    user:
+                      {
+                        id: 33,
+                        MaNV: B18DCAT022,
+                        FirstName: A,
+                        LastName: Nguyen Van,
+                        Email: nguyenvana@gmail.com,
+                        UserName: BinhDo,
+                        Password: "123456",
+                        Position: inter,
+                        Phone: "1234567",
+                        Gender: "0",
+                        CMND: B1234567,
+                        BHXH: B1234567,
+                        Address: HaNoi,
+                        ManagerID: null,
+                        Role: 1,
+                      },
+                    Message: create successfully,
+                  }
+        400:
+          description: problem request
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: fail
+                typeError: HTTP Error
+                statusError: Bad Request
+                message: request fail !!!
+        409:
+          description: problem Database
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: fail
+                typeError: DataBase Error
+                statusError: Conflict
+                message: validate error
+
+  /user/deleteUser:
+    delete:
+      tags:
+        - users
+      summary: delete soft user
+      description: delete soft user
+      operationId: DeleteSoftUser
+      requestBody:
+        description: id User
+        content:
+          application/json:
+            schema:
+              title: delete user by id
+              required:
+                - id
+              type: string
+              properties:
+                id:
+                  type: string
+              example:
+                id: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                Code: -1
+                message: delete user successfully
+        400:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: id user is not exist !
+        500:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: DATABASE ERROR
+                statusError: Internal Server Error
+                message: id user is not exist !
+  /user/destroyUser:
+    delete:
+      tags:
+        - users
+      summary: destroy user
+      description: destroy user only user deleted
+      operationId: DetroyUserId
+      requestBody:
+        description: destroy User
+        content:
+          application/json:
+            schema:
+              title: destroy user by id
+              required:
+                - id
+              type: string
+              properties:
+                id:
+                  type: string
+              example:
+                id: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                message: Destroy user successfully
+        400:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: request fail !!!
+        500:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: DATABASE ERROR
+                statusError: Internal Server Error
+                message: destroy fail !!!
+  /user/userInfo:
+    get:
+      tags:
+        - users
+      summary: get info user
+      description: only user admin get info user
+      operationId: getInfoUserId
+      parameters:
+        - name: id
+          in: query
+          description: ID of user to return
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                Code: 0
+                message: Ok
+                user:
+                  {
+                    id: 00,
+                    MaNV: B18DCAT026,
+                    FirstName: Do,
+                    LastName: Nguyen,
+                    Position: inter,
+                    Phone: "1234567",
+                    Avatar: "http://localhost:3000/avatar-1660042035597.jpg",
+                    Gender: "0",
+                    Address: Hn,
+                    ManagerID: 1,
+                    Role: 1,
+                    deletedAt: "2022-08-09T10:27:41.000Z",
+                    createdAt: "022-08-31T16:52:06.000Z,",
+                    updatedAt: "022-08-31T16:52:06.000Z",
+                  }
+        400:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: request fail !!!
+        500:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: DATABASE ERROR
+                statusError: Internal Server Error
+                message: destroy fail !!!
+  /user/{id}/edit:
+    get:
+      tags:
+        - users
+      summary: user get infor user
+      description: users get their own information to edit
+      operationId: getEditUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                Code: 0
+                message: "OK"
+                user:
+                  {
+                    MaNV: B18DCAT020,
+                    FirstName: Do,
+                    LastName: Binh,
+                    Email: dothienbinh@gmail,
+                    UserName: BinhDo20,
+                    Phone: "123456",
+                    Avatar: "http://localhost:3000/avatar-1660042035597.jpg",
+                    Gender: "0",
+                    CMND: "1234",
+                    BHXH: "1234",
+                    Address: Hn,
+                  }
+        400:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: request fail !!!
+  /user/{id}/updateUser:
+    put:
+      tags:
+        - users
+      summary: user update infor
+      description: user update info after edit
+      operationId: updateUserId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: info user
+        content:
+          application/json:
+            schema:
+              title: update user by id
+              required:
+                - FirstName
+                - LastName
+                - Email
+                - UserName
+                - Password
+                - Phone
+                - Gender
+                - CMND
+                - BHXH
+                - Address
+              type: object
+              properties:
+                FirstName:
+                  type: string
+                LastName:
+                  type: string
+                Email:
+                  type: string
+                UserName:
+                  type: string
+                Password:
+                  type: string
+                Phone:
+                  type: string
+                Gender:
+                  type: string
+                CMND:
+                  type: string
+                BHXH:
+                  type: string
+                Address:
+                  type: string
+              example:
+                FirstName: A
+                LastName: Nguyen Van
+                Email: nguyenvana@gmail.com
+                UserName: BinhDo26
+                Password: "1234567"
+                Phone: "1234567"
+                Gender: "0"
+                CMND: B1234567
+                BHXH: B1234567
+                Address: HaNoi
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                Code: 0
+                message: "update successfully!!!"
+        400:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: problem request !!!
+        500:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: DataBase Error
+                statusError: Internal Server Error
+                message: problem request !!!
+  /user/{id}/updateImage:
+    put:
+      tags:
+        - users
+      summary: user update img
+      description: user update img (Only image files are allowed!)
+      operationId: updateImgUserId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: info user
+        content:
+          multipart/form-data:
+            schema:
+              title: update user by id
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                Code: 0
+                message: "update successfully!!!"
+        400:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: problem request !!!
+        500:
+          content:
+            application/json:
+              example:
+                errCode: -1
+                status: "fail"
+                typeError: Upload Error
+                statusError: Internal Server Error
+                message: Please select an image to upload
+  /user/AllUserExist:
+    get:
+      tags:
+        - users
+      summary: only user HR, Drirector and admin can get all user (Role = 0, user is employee)
+      description: all user field deleted null
+      responses:
+        200:
+          description: get users success
+          content:
+            application/json:
+              example:
+                errCode: 0
+                message: OK
+                users:
+                  [
+                    {
+                      MaNV: "B18DCAT026",
+                      FirstName: "A",
+                      LastName: "Nguyen Van",
+                      Email: "nguyenvana@gmail.com",
+                      Position: null,
+                      Phone: "1234567",
+                      Avatar: "http://localhost:3000/avatar-1662051358589.jpg",
+                      Gender: "0",
+                      CMND: "B1234567",
+                      Address: "HaNoi",
+                    },
+                    {
+                      MaNV: "B18DCAT12",
+                      FirstName: "A",
+                      LastName: "Nguyen AAA",
+                      Email: "AAA@gmail.com",
+                      Position: "inter",
+                      Phone: "1234567",
+                      Avatar: null,
+                      Gender: "0",
+                      CMND: "B1234567",
+                      Address: "HaNoi",
+                    },
+                  ]
+  /user/:
+    get:
+      tags:
+        - users
+      summary: only user Admin can get all user
+      description: all user field deleted not null
+      responses:
+        200:
+          description: get users success
+          content:
+            application/json:
+              example:
+                errCode: 0
+                message: OK
+                users:
+                  [
+                    {
+                      MaNV: "B18DCAT026",
+                      FirstName: "A",
+                      LastName: "Nguyen Van",
+                      Email: "nguyenvana@gmail.com",
+                      Position: null,
+                      Phone: "1234567",
+                      Avatar: "http://localhost:3000/avatar-1662051358589.jpg",
+                      Gender: "0",
+                      CMND: "B1234567",
+                      Address: "HaNoi",
+                    },
+                    {
+                      MaNV: "B18DCAT12",
+                      FirstName: "A",
+                      LastName: "Nguyen AAA",
+                      Email: "AAA@gmail.com",
+                      Position: "inter",
+                      Phone: "1234567",
+                      Avatar: null,
+                      Gender: "0",
+                      CMND: "B1234567",
+                      Address: "HaNoi",
+                    },
+                  ]
+  /logout:
+    get:
+      tags:
+        - users
+      summary: logout
+      description: delete ACCESS_TOKEN and REFRESH_TOKEN
+      responses:
+        200:
+          description: logout success
+          content:
+            application/json:
+              example:
+                errCode: [0, 1]
+                message: logout success
+      security:
+        - ACCESS_TOKEN: []
+components:
+  schemas:
+    Roles:
+      title: Roles
+      typpe: integer
+      enum: [0, 1, 2, 3]
+      format: int32
+  securitySchemes:
+    ACCESS_TOKEN: # arbitrary name for the security scheme
+      type: http
+      scheme: basic
+      bearerFormat: JWT
+      in: cookie

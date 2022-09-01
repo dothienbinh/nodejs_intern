@@ -7,10 +7,15 @@ import bodyParser from 'body-parser';
 import cookies from 'cookie-parser';
 import handleHttpErrors from './middleware/errorHandler';
 import swaggerConfig from './configs/apidocs/apidocs.config';
+import {StatusCodes} from 'http-status-codes';
+import {statusError} from './libs/error/statusError';
+import typeError from './libs/error/typeError';
 require('dotenv').config();
 
 const app = express()
 const port = process.env.PORT || 8080;
+
+console.log(typeError.HTTP_ERROR);
 
 app.use(cookies());
 app.use(bodyParser.json());

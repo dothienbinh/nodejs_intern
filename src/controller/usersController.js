@@ -4,10 +4,12 @@ import userService from '../services/userService';
 import jwt from 'jsonwebtoken';
 import {createToken, sendRefreshToken} from '../utill/Auth'
 import checkAuth from '../middleware/checkAuth';
+import HttpErrors from '../libs/error/httpErrors';
+import typeError from '../libs/error/typeError';
 const port = process.env.PORT || 8080;
 let upload = multer().single('profile_pic');
 
-let handleUploadFile = async (req, res) => {
+let handleUploadFile = async (req, res, next) => {
     // 'profile_pic' is the name of our file input field in the HTML form
 
     upload(req, res, function (err) {
@@ -36,14 +38,12 @@ let loginUser = async (req, res, next) => {
 
     if(!req.body.UserName || !req.body.Password) {
         
-        const err = new Error('UserName or Password is not correct');
-        err.statusCode = 400;
+        let err = HttpErrors.BadRequest('UserName or Password is not correct');
         return next(err);
     }
 
     if(req.cookies.ACCESS_TOKEN) {
-        const err = new Error('session login exist');
-        err.statusCode = 400;
+        let err = HttpErrors.BadRequest('session login exist', typeError.TOKEN_ERROR);
         return next(err);
     }
 
@@ -60,25 +60,20 @@ let loginUser = async (req, res, next) => {
         let dataOutput = await userService.saveToken({
             id_User: userSuccess.id,
             token: refreshToken,
-        })
-        if(dataOutput.errCode != 0) {
-            return res.status(200).json({
-                errCode: dataOutput.errCode,
-                message: dataOutput.errMessage,
-                
-            })
-        }
-        return res.status(200).json({
-            errCode: userData.errCode,
-            message: userData.errMessage,
+        })        
+        
+        let data = {
             ACCESS_TOKEN: token,
             REFRESH_TOKEN: refreshToken,
-        })
+        }
+
+        return res.status(200).json({data});
     } else {
-        return res.status(500).json({
-            errCode: userData.errCode,
-            message: userData.errMessage,
-        })
+
+        let err = HttpErrors.BadRequest(userData.errMessage);
+        err.errCode = userData.errCode;        
+
+        return next(err);
     }
 }
 
@@ -91,49 +86,61 @@ let index = async (req, res) => {
 }
 
 
-let createUser = async (req, res) => {
+let createUser = async (req, res, next) => {
+    let dataInput = req.body;
+    if(!dataInput.MaNV || !dataInput.FirstName || !dataInput.LastName || !dataInput.Email || !dataInput.UserName || !dataInput.Password || !dataInput.Position){
+        let err = HttpErrors.BadRequest("request fail !!!");
+        return next(err);
+    }
+    if(!verifyRole(dataInput)) {
+        let err = HttpErrors.BadRequest("request fail Role!!!");
+        return next(err);
+    }
     userService.createUser(req.body).then((data) => {
-        res.status(200).json({
-            data
-        });
-    }).catch(err => {
-        res.status(500).json({
-            errCode: 3,
-            errMessage: err,
-        })
+       
+        return res.status(200).json({data});
+    }).catch(error => {
+        return next(error);
     })
     
 }
 
-let deleteUser = async (req, res) => {
-    console.log(req.body.id);
+
+let deleteUser = async (req, res, next) => {
+    if(!req.body.id) {
+        let err = HttpErrors.BadRequest('id user is not exist !');
+        return next(err);
+    }
     let userData = await userService.deleteUser(req.body.id);
     if(!userData.result) {
-        return res.status(500).json({
-            errCode: userData.errCode,
-            message: userData.errMessage,
-        })
+        let err = HttpErrors.IODataBase(userData.errMessage);
+        err.errCode = userData.errCode
+        return next(err)
     } else {
         return res.status(200).json({
-            errCode: userData.errCode,
+            Code: userData.errCode,
             message: userData.errMessage,
         })
     }
 }
 
-let getInfoUser = async (req, res) => {
+let getInfoUser = async (req, res, next) => {
     if(!req.query.id) {
-        return res.status(500).json({
-            errCode: 1,
-            message: 'user not found',
-        })
+        let err = HttpErrors.BadRequest("request fail !!!");
+        return next(err);
     } else {
         let userData = await userService.getInfoUser(req.query.id);
-        return res.status(200).json({
-            errCode: userData.errCode,
-            message: userData.errMessage,
-            user: userData.user ? userData.user : {},
-        })
+        if(userData.user) {
+            return res.status(200).json({
+                Code: userData.errCode,
+                message: userData.errMessage,
+                user: userData.user,
+            });
+        } else {
+            let err = HttpErrors.IODataBase(userData.message);
+            return next(err);
+        }
+        
     }
     
 }
@@ -147,25 +154,32 @@ let getAllUser = async (req, res) => {
     })
 }
 
-let destroyUser = async (req, res) => {
+let destroyUser = async (req, res, next) => {
+    if(!req.body.id) {
+        let err = HttpErrors.BadRequest("request fail !!!");
+        return next(err);
+    }
     let mess = await userService.destroyUser(req.body.id);
-    return res.status(200).json({
-        message: mess,
-    })
+    if(mess) {
+        res.status(200).json({
+            message: 'Destroy user successfully',
+        })
+    } else {
+        let err = HttpErrors.IODataBase('destroy fail !!!');
+        return next(err);
+    }
 }
 
-let editUser = async (req, res) => {
+let editUser = async (req, res, next) => {
     if(!req.params.id) {
-        return res.status(500).json({
-            errCode: 1,
-            message: 'user not found',
-        })
+        let err = HttpErrors.BadRequest("request fail !!!");
+        return next(err);
     } else {
         checkAuth.verifyUser(req.params.id);
 
         let userData = await userService.getEditUser(req.params.id);
         return res.status(200).json({
-            errCode: userData.errCode,
+            Code: userData.errCode,
             message: userData.errMessage,
             user: userData.user ? userData.user : {},
         })
@@ -177,35 +191,34 @@ let restoreUser = async (req, res) => {
 
 }
 
-let updateUser = async (req, res) => {
+let updateUser = async (req, res, next) => {
     let id = req.params.id;
+    console.log(req.body);
     // verify -> id - compare id_token vs id
     checkAuth.verifyUser(req.params.id);
     //
+    let data = req.body;
+    if(!data.FirstName || !data.LastName || !data.Email || !data.UserName || !data.Password || !data.Phone || !data.Gender || !data.CMND || !data.BHXH || !data.Address) {
+        let err = HttpErrors.BadRequest("problem request !!!");
+        return next(err);
+    }
     let userData = await userService.checkUser_id(id);
     if(!userData.user) {
-        return res.status(500).json({
-            errCode: userData.errCode,
-            message: userData.errMessage,
-        })
+        let err = HttpErrors.IODataBase(userData.errMessage);
+        return next(err);
     } else {
         let userId = userData.user.id;
-        let data = {};
-        data = req.body;
-        data.id = userId;
+        let dataInput = {};
+        dataInput = req.body;
+        dataInput.id = userId;
         if(id == userId) {
-            let result = await userService.updateUser(data);
-            res.json(result);
-        } else {
-            return res.status(500).json({
-                errCode: 4,
-                message: 'Not Permisson!'
-            })
+            let result = await userService.updateUser(dataInput);
+            res.status(200).json(result);
         }
     }
 }
 
-let updateImage = async (req, res) => {
+let updateImage = async (req, res, next) => {
     let id = req.params.id;
     let id_User = id;
     let urlImage = '';
@@ -216,26 +229,34 @@ let updateImage = async (req, res) => {
     //update
     let userData = await userService.checkUser_id(id);
     if(!userData.user) {
-        return res.status(500).json({
-            errCode: userData.errCode,
-            errMessage: userData.errMessage,
-        })
+        let err = HttpErrors.IODataBase(userData.errMessage);
+        err.errCode = userData.errCode;
+        return next(err);        
     } else {
         upload(req, res,  async (err) => {
             // req.file contains information of uploaded file
             // req.body contains information of text fields, if there were any
     
             if (req.fileValidationError) {
-                return res.send(req.fileValidationError);
+                console.log(req.fileValidationError);
+                let error = HttpErrors.UploadError('req.fileValidationError');
+                error.errCode = 1;
+                return next(error);
             }
             else if (!req.file) {
-                return res.send('Please select an image to upload');
+                let error = HttpErrors.UploadError('Please select an image to upload');
+                error.errCode = 2;
+                return next(error);
             }
             else if (err instanceof multer.MulterError) {
-                return res.send(err);
+                let error = HttpErrors.UploadError(err.message);
+                error.errCode = 3;
+                return next(error);
             }
             else if (err) {
-                return res.send(err);
+                let error = HttpErrors.UploadError(err.message);
+                error.errCode = 4;
+                return next(error);
             }
     
             // Display uploaded image for user validation
@@ -258,6 +279,14 @@ let getAllUserExist = async (req, res) => {
         users: userData.users ? userData.users : {},
     })
 } 
+
+let verifyRole = function (data) {
+    if(data.Role >= 0 && data.Role <=3) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 module.exports = {
     index, upAvatar, handleUploadFile, createUser, deleteUser, getInfoUser, loginUser, getAllUser, destroyUser, editUser,

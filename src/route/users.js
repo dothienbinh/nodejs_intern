@@ -24,7 +24,9 @@ const imageFilter = function (req, file, cb) {
     // Accept images only
     if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
         req.fileValidationError = 'Only image files are allowed!';
-        return cb(new Error('Only image files are allowed!'), false);
+        let err = new Error('Only image files are allowed!');
+        err.typeError = 'Upload Error';
+        return cb(err, false);
     }
     cb(null, true);
 };
@@ -48,8 +50,8 @@ router.put('/:id/updateUser', checkAuth.checkRole(0), usersController.updateUser
 // update image - verifyUser
 router.put('/:id/updateImage', checkAuth.checkRole(0), upload.single('avatar'), usersController.updateImage)
 // get all user exist deletedAt: null
-// router.get('/AllUserExist', checkAuth.checkRole(2), usersController.getAllUserExist);
-router.get('/AllUserExist', usersController.getAllUserExist);
+router.get('/AllUserExist', checkAuth.checkRole(2), usersController.getAllUserExist);
+// router.get('/AllUserExist', usersController.getAllUserExist);
 // admin deletedAt: not null
 // router.get('/', checkAuth.checkRole(3), usersController.getAllUser);
 router.get('/', usersController.getAllUser);
