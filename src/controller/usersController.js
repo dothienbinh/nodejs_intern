@@ -195,7 +195,10 @@ let updateUser = async (req, res, next) => {
     let id = req.params.id;
     console.log(req.body);
     // verify -> id - compare id_token vs id
-    checkAuth.verifyUser(req.params.id);
+    let a = await checkAuth.verifyUser(req.params.id, req.cookies.ACCESS_TOKEN);
+    if(a!=1){
+        return next(a);
+    }
     //
     let data = req.body;
     if(!data.FirstName || !data.LastName || !data.Email || !data.UserName || !data.Password || !data.Phone || !data.Gender || !data.CMND || !data.BHXH || !data.Address) {
@@ -225,8 +228,11 @@ let updateImage = async (req, res, next) => {
     let dataInput ={};
     dataInput.id_User = id_User;
     // verify -> id - compare id_token vs id
-    checkAuth.verifyUser(id_User);
+    let a = await checkAuth.verifyUser(id_User, req.cookies.ACCESS_TOKEN);
     //update
+    if(a!=1){
+        return next(a);
+    } 
     let userData = await userService.checkUser_id(id);
     if(!userData.user) {
         let err = HttpErrors.IODataBase(userData.errMessage);
