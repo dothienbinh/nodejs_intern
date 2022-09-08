@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import HttpErrors from '../libs/error/httpErrors';
+import typeError from '../libs/error/typeError';
 /* 
 Role :
     0: user - employee (update info)
@@ -15,14 +16,23 @@ class Auth {
         try {
             let token = req.cookies.ACCESS_TOKEN;
             if(!req.cookies.ACCESS_TOKEN) {
-                res.sendStatus(401);
+                let err = HttpErrors.Unauthorized('Access token invalid', typeError.TOKEN_ERROR);
+                err.errCode = 10;
+                return next(err);
             } else {
                 let decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
-                decoded.Role === 3 ? next() : res.sendStatus(403);
+                if(decoded.Role === 3) {
+                    next();
+                } else {
+                    let err = HttpErrors.Forbiden('Unauthorized', typeError.TOKEN_ERROR);
+                    err.errCode = 11;
+                    return next(err);
+                }
             }
         } catch (e) {
-            console.log('ERROR REFRESHING TOKEN', e);
-            return res.sendStatus(403);
+            let err = HttpErrors.InvalidToken(e.message);
+            err.errCode = 12;
+            return next(err);
         }
     }
 
@@ -31,14 +41,24 @@ class Auth {
             try {
                 let token = req.cookies.ACCESS_TOKEN;
                 if(!token) {
-                    res.sendStatus(401);
+                    let err = HttpErrors.Unauthorized('Token invalid', typeError.TOKEN_ERROR);
+                    err.errCode = 13;
+                    return next(err);
+                    
                 } else {
                     let decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
-                    decoded.Role >= Role ? next() : res.sendStatus(403);
+                    if(decoded.Role >= Role) {
+                        next();
+                    } else {
+                        let err = HttpErrors.Forbiden();
+                        err.errCode = 14;
+                        return next(err);
+                    }
                 }
             } catch (e) {
-                console.log('ERROR REFRESHING TOKEN', e);
-                return res.sendStatus(403);
+                let err = HttpErrors.InvalidToken(e.message);
+                err.errCode = 15;
+                return next(err);
             }
         }
     }

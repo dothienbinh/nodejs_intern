@@ -2,12 +2,17 @@ import express, { application } from 'express';
 import jwt from 'jsonwebtoken';
 import userService from '../services/userService';
 import {createToken, sendRefreshToken} from '../utill/Auth'
+import HttpErrors from '../libs/error/httpErrors';
 const router = express.Router();
 
-router.get('/refreshToken', async(req, res) => {
+router.get('/refreshToken', async(req, res, next) => {
     const refreshToken = req.cookies.REFRESH_TOKEN;
     //check refreshToken exist
-    if(!refreshToken) return res.sendStatus(401);
+    if(!refreshToken) {
+        let err = HttpErrors.Unauthorized('refreshToken is not exist');
+        err.errCode = 1;
+        return next(err);
+    }
     try {
         const decodedUser = jwt.verify(
             refreshToken,
@@ -19,7 +24,9 @@ router.get('/refreshToken', async(req, res) => {
         userExist = userExist.user;
 
         if(!userExist || userExist.RefreshToken != refreshToken) {
-            return res.sendStatus(401);
+            let err = HttpErrors.Forbiden();
+            err.errCode = 2;
+            return next(err);
         }
 
         // Renew and save
@@ -30,28 +37,32 @@ router.get('/refreshToken', async(req, res) => {
             token: RefreshTokenV2,
         });
         if(dataOutput.errCode !=0 ){
-            return res.status(500).json({
-                errCode: dataOutput.errCode,
-                message: dataOutput.errMessage,
-            })
+            let err = HttpErrors.ServerError(dataOutput.errMessage);
+            err.errCode = dataOutput.errCode;
+            return next(err);            
         }
 
         res.cookie('ACCESS_TOKEN', token);
-        res.json({
+        res.status(200).json({
             ACCESS_TOKEN: token,
             RefreshTokenV2: RefreshTokenV2
         })        
 
     } catch (e) {
-        console.log('ERROR REFRESHING TOKEN', e);
-        return res.sendStatus(403);
+        let err = HttpErrors.Forbiden(e.message);
+        err.errCode = 3;
+        return next(err);
     }
 })
 
-router.get('/logout', async(req, res) => {
+router.get('/logout', async(req, res, next) => {
     const refreshToken = req.cookies.REFRESH_TOKEN;
     const accessToken = req.cookies.ACCESS_TOKEN;
-    if(!refreshToken || !accessToken) return res.sendStatus(401);
+    if(!refreshToken || !accessToken) {
+        let err = HttpErrors.Unauthorized('refreshToken accessToken is not exist');
+        err.errCode = 1;
+        return next(err);
+    }
     try {
         let decodeAccessToken = jwt.verify(
             accessToken,
@@ -66,10 +77,9 @@ router.get('/logout', async(req, res) => {
                 id_User: decodeAccessToken.id,
             });
             if(dataOutput.errCode !=0 ){
-                return res.status(500).json({
-                    errCode: dataOutput.errCode,
-                    message: 'err save and remove token',
-                })
+                let err = HttpErrors.IODataBase('err save and remove token');
+                err.errCode = dataOutput.errCode;
+                return next(err);
             } else {
                 res.clearCookie("ACCESS_TOKEN");
                 res.clearCookie("REFRESH_TOKEN");
@@ -79,11 +89,14 @@ router.get('/logout', async(req, res) => {
                 })
             }
         } else {
-            return res.sendStatus(401);
+            let err = HttpErrors.Forbiden();
+            err.errCode = 3;
+            return next(err);
         }
     } catch (e) {
-        console.log('ERROR REFRESHING TOKEN', e);
-        return res.sendStatus(403);
+        let err = HttpErrors.ServerError(e.message);
+        err.errCode = 4;
+        return next(err);
     }
 })
 

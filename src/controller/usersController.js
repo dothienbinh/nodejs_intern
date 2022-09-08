@@ -65,6 +65,7 @@ let loginUser = async (req, res, next) => {
         let data = {
             ACCESS_TOKEN: token,
             REFRESH_TOKEN: refreshToken,
+            id: userData.user.id,
         }
 
         return res.status(200).json({data});
@@ -90,10 +91,12 @@ let createUser = async (req, res, next) => {
     let dataInput = req.body;
     if(!dataInput.MaNV || !dataInput.FirstName || !dataInput.LastName || !dataInput.Email || !dataInput.UserName || !dataInput.Password || !dataInput.Position){
         let err = HttpErrors.BadRequest("request fail !!!");
+        err.errCode = 1;
         return next(err);
     }
     if(!verifyRole(dataInput)) {
         let err = HttpErrors.BadRequest("request fail Role!!!");
+        err.errCode = 2;
         return next(err);
     }
     userService.createUser(req.body).then((data) => {

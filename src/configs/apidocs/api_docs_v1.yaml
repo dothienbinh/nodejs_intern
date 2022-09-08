@@ -607,15 +607,367 @@ paths:
               example:
                 errCode: [0, 1]
                 message: logout success
+        401:
+          description: refreshToken is not exist
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Http error
+                statusError: Unauthorized
+                message: refreshToken accessToken is not exist
+        403:
+          description: refreshToken is not exist
+          content:
+            application/json:
+              example:
+                errCode: 3
+                status: "fail"
+                typeError: Http error
+                statusError: Forbidden
+                message: message err
+        500:
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: DataBase Error
+                statusError: Internal Server Error
+                message: err save and remove token
       security:
         - ACCESS_TOKEN: []
+  /refreshToken:
+    get:
+      tags:
+        - users
+      summary: refreshToken
+      description: delete ACCESS_TOKEN, REFRESH_TOKEN and get new ACCESS_TOKEN, REFRESH_TOKEN
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              example:
+                ACCESS_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI5NTFhNzI2Mi1iNWUwLTRhZWYtYTg4My1iMTZiNmQyNWEzNmMiLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInJvbGUiOiJBZG1pbiIsImlhdCI6MTY1OTc3ODc2NCwiZXhwIjoxNjU5ODY1MTY0fQ.7_ZQnwvDzPURW7-3iT6yuhfOzcDIbx2Ue2IKcVqjis4
+                RefreshTokenV2: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiTWFOViI6IkIxOERDQVQwMjIiLCJGaXJzdE5hbWUiOiJBIiwiTGFzdE5hbWUiOiJOZ3V5ZW4gVmFuIEEiLCJSb2xlIjozLCJpYXQiOjE2NjE4ODIxNDgsImV4cCI6MTY2MTg4NTc0OH0.Z39bCdz5NEpXJaNiCQGJ0wKwgR_ZIL7_dKp96EHy5bk
+        401:
+          description: refreshToken is not exist
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Http error
+                statusError: Unauthorized
+                message: refreshToken is not exist
+        403:
+          description: refreshToken is not exist
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Http error
+                statusError: Forbidden
+                message:
+        500:
+          content:
+            application/json:
+              example:
+                errCode: 3
+                status: "fail"
+                typeError: Http Error
+                statusError: Internal Server Error
+                message: message err
+  /job/createFromJob:
+    post:
+      tags:
+        - FormJob
+      summary: create FormJob
+      description: users create FormJob => id creator = id user
+      operationId: createFormJobId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/FormJob"
+              required:
+                - Name
+                - Desc
+                - Status
+                - StatusDesc
+              example:
+                Name: thu viec 30
+                Desc: abcabc abc abc
+                Status: 0
+                StatusDesc: chu hoan thanh
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              example:
+                job:
+                  {
+                    id: 9,
+                    Name: thu viec 15,
+                    Desc: abc xyz qwe rty uio,
+                    Status: true,
+                    StatusDesc: chua hoan thanh,
+                    IDNv: 7,
+                    IDCreator: 7,
+                    updatedAt: "2022-09-08T09:19:12.107Z",
+                    createdAt: "2022-09-08T09:19:12.107Z",
+                  }
+                errCode: 0
+                Message: create job successfully
+        400:
+          description: problem request !!! Name, Desc, StatusDesc is not exist
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: problem request !!!
+        500:
+          content:
+            application/json:
+              example:
+                errCode: 3
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: message err
+  /job/AllFormJob:
+    get:
+      tags:
+        - FormJob
+      summary: get All FormJob
+      description: id User in token => All FormJob
+      responses:
+        200:
+          description: success!!
+          content:
+            application/json:
+              example:
+                jobs:
+                  [
+                    {
+                      id: 1,
+                      Name: thu viec 8,
+                      Desc: abc xyz qwe rty uio,
+                      Status: 1,
+                      StatusDesc: chua hoan thanh,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-07T16:27:24.000Z",
+                      updatedAt: "2022-09-07T16:27:24.000Z",
+                      deletedAt: null,
+                    },
+                    {
+                      id: 2,
+                      Name: thu viec 9,
+                      Desc: abc xyz qwe rty uio,
+                      Status: 1,
+                      StatusDesc: chua hoan thanh,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-07T16:27:30.000Z",
+                      updatedAt: "2022-09-07T16:27:30.000Z",
+                      deletedAt: null,
+                    },
+                  ]
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 3
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: message err
+  /job/{id}/editFormJob:
+    get:
+      tags:
+        - FormJob
+      summary: user get infor FormJob
+      description: users get tFormJob to edit
+      operationId: getEditFormJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                job:
+                  {
+                    id: 2,
+                    Name: thu viec 9,
+                    Desc: abc xyz qwe rty uio,
+                    Status: 1,
+                    StatusDesc: chua hoan thanh,
+                    IDNv: 1,
+                    IDCreator: 1,
+                    createdAt: "2022-09-07T16:27:30.000Z",
+                    updatedAt: "2022-09-07T16:27:30.000Z",
+                    deletedAt: null,
+                  }
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwterr verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 3
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: formjob not found !!!
+  /job/{id}/updateFormJob:
+    put:
+      tags:
+        - FormJob
+      summary: user update FormJob
+      description: user update FormJob
+      operationId: updateFormJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/FormJob"
+              required:
+                - Name
+                - Desc
+                - Status
+                - StatusDesc
+              example:
+                Name: thu viec 30
+                Desc: abcabc abc abc
+                Status: 0
+                StatusDesc: chu hoan thanh
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                Message: Save success!!!
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwterr verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: update fail !!! or formjob not found !!!
+  /job/{id}/deleteFormJob:
+    delete:
+      tags:
+        - FormJob
+      summary: user update FormJob
+      description: user update FormJob
+      operationId: updateFormJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                Message: Delete success!!!
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwterr verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: Delete fail !!! or formjob not found !!!
 components:
   schemas:
+    FormJob:
+      title: FormJob
+      type: object
+      properties:
+        Name:
+          type: string
+        Desc:
+          type: string
+        Status:
+          type: integer
+        StatusDesc:
+          type: string
+    FormReview:
+      title: FormReview
+      type: object
+      properties:
+        Name:
+          type: string
+        Desc:
+          type: string
+        Status:
+          type: integer
+        StatusDesc:
+          type: string
     Roles:
       title: Roles
-      typpe: integer
+      type: string
       enum: [0, 1, 2, 3]
-      format: int32
+      # format: int32
   securitySchemes:
     ACCESS_TOKEN: # arbitrary name for the security scheme
       type: http

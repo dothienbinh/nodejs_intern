@@ -27,7 +27,6 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       deletedAt: {
-        allowNull: false,
         type: Sequelize.DATE
       },
       createdAt: {
@@ -35,7 +34,6 @@ module.exports = {
         type: Sequelize.DATE
       },
       updatedAt: {
-        allowNull: false,
         type: Sequelize.DATE
       }
     });
