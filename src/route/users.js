@@ -40,6 +40,8 @@ router.post('/createUser', checkAuth.checkRole(3), usersController.createUser);
 router.delete('/deleteUser', checkAuth.checkRole(2), usersController.deleteUser);
 //admin
 router.delete('/destroyUser', checkAuth.checkRole(3), usersController.destroyUser);
+//admin restore
+router.patch('/restoreUser', checkAuth.checkRole(3), usersController.restoreUser);
 //admin
 router.get('/userInfo', checkAuth.checkRole(3), usersController.getInfoUser);
 // update not image - not admin - verifyUser
@@ -52,7 +54,7 @@ router.put('/:id/updateImage', checkAuth.checkRole(0), upload.single('avatar'), 
 router.get('/AllUserExist', checkAuth.checkRole(2), usersController.getAllUserExist);
 // router.get('/AllUserExist', usersController.getAllUserExist);
 // admin deletedAt: not null
-// router.get('/', checkAuth.checkRole(3), usersController.getAllUser);
-router.get('/', usersController.getAllUser);
+router.get('/', checkAuth.checkRole(3), usersController.getAllUser);
+// router.get('/', usersController.getAllUser);
 
 module.exports = router;

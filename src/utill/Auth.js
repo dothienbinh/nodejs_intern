@@ -9,7 +9,7 @@ export function createToken(type, user) {
                 LastName: user.LastName,
                 Role: user.Role,
             },  type == 'ACCESS_TOKEN' ? ( process.env.ACCESS_TOKEN_SECRET_KEY) : (process.env.REFRESH_TOKEN_SECRET), {
-                expiresIn: type == 'ACCESS_TOKEN' ? '600s' : '60m',
+                expiresIn: type == 'ACCESS_TOKEN' ? '6000s' : '60m',
             })
             return token;
        

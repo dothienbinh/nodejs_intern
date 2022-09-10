@@ -190,8 +190,30 @@ let editUser = async (req, res, next) => {
     
 }
 
-let restoreUser = async (req, res) => {
-
+let restoreUser = async (req, res, next) => {
+    if(!req.body.idUser) {
+        let err = HttpErrors.BadRequest('idUser is not exist !!!');
+        err.errCode = 1;
+        return next(err);
+    }
+    await userService.restoreUser(req.body.idUser)
+            .then ((data) => {
+                console.log(data);
+                if(data) {
+                    res.status(200).json({
+                        Message: "restore success !!!",
+                    })
+                } else {
+                    let err = HttpErrors.IODataBase('restore fail !!!');
+                    err.errCode = 2;
+                    return next(err);
+                }
+            })
+            .catch((error) => {
+                let err = HttpErrors.IODataBase(error.message);
+                err.errCode = 3;
+                return next(err);
+            })
 }
 
 let updateUser = async (req, res, next) => {

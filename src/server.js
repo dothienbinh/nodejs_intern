@@ -15,7 +15,6 @@ require('dotenv').config();
 const app = express()
 const port = process.env.PORT || 8080;
 
-console.log(typeError.HTTP_ERROR);
 
 app.use(cookies());
 app.use(bodyParser.json());
@@ -27,7 +26,6 @@ app.use(express.static(publicDir));
 configViewEngine(app);
 initWebRoute(app);
 app.use(handleHttpErrors);
-console.log('...check');
 
 connectDB();
 

@@ -177,14 +177,13 @@ paths:
                 typeError: DataBase Error
                 statusError: Conflict
                 message: validate error
-
   /user/deleteUser:
     delete:
       tags:
         - users
-      summary: delete soft user
-      description: delete soft user
-      operationId: DeleteSoftUser
+      summary: soft delete user
+      description: User HR, Drirector and admin
+      operationId: SoftDeletetUser
       requestBody:
         description: id User
         content:
@@ -198,7 +197,7 @@ paths:
                 id:
                   type: string
               example:
-                id: 1
+                id: 12
       responses:
         200:
           description: OK
@@ -230,7 +229,7 @@ paths:
       tags:
         - users
       summary: destroy user
-      description: destroy user only user deleted
+      description: destroy user only user deleted, only user amdin can access
       operationId: DetroyUserId
       requestBody:
         description: destroy User
@@ -245,7 +244,7 @@ paths:
                 id:
                   type: string
               example:
-                id: 1
+                id: 12
       responses:
         200:
           description: OK
@@ -271,12 +270,58 @@ paths:
                 typeError: DATABASE ERROR
                 statusError: Internal Server Error
                 message: destroy fail !!!
+  /user/restoreUser:
+    patch:
+      tags:
+        - users
+      summary: restore user
+      description: restore user only user Admin, Role = 3
+      operationId: RestoreUserId
+      requestBody:
+        description: restore User
+        content:
+          application/json:
+            schema:
+              title: restore user by id
+              required:
+                - idUser
+              type: string
+              properties:
+                idUser:
+                  type: string
+              example:
+                idUser: 12
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              example:
+                message: Restore success !!!
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: idUser is not exist
+        500:
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: DATABASE ERROR
+                statusError: Internal Server Error
+                message: destroy fail !!!
   /user/userInfo:
     get:
       tags:
         - users
-      summary: get info user
-      description: only user admin get info user
+      summary: get full info user
+      description: only user admin get full info user
       operationId: getInfoUserId
       parameters:
         - name: id
@@ -643,7 +688,7 @@ paths:
       tags:
         - users
       summary: refreshToken
-      description: delete ACCESS_TOKEN, REFRESH_TOKEN and get new ACCESS_TOKEN, REFRESH_TOKEN
+      description: delete ACCESS_TOKEN, REFRESH_TOKEN and get new ACCESS_TOKEN, REFRESH_TOKEN, expiresIn Access token 60s
       responses:
         200:
           description: success
@@ -792,6 +837,64 @@ paths:
                 typeError: Database Error
                 statusError: Internal Server Error
                 message: message err
+  /job/AllFormJobUser:
+    get:
+      tags:
+        - FormJob
+      summary: get All FormJob by Id User in Access_TOken
+      description: verify jwt => id User in token => All FormJob
+      responses:
+        200:
+          description: success!!
+          content:
+            application/json:
+              example:
+                jobs:
+                  [
+                    {
+                      id: 1,
+                      Name: thu viec 8,
+                      Desc: abc xyz qwe rty uio,
+                      Status: 1,
+                      StatusDesc: chua hoan thanh,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-07T16:27:24.000Z",
+                      updatedAt: "2022-09-07T16:27:24.000Z",
+                      deletedAt: null,
+                    },
+                    {
+                      id: 2,
+                      Name: thu viec 9,
+                      Desc: abc xyz qwe rty uio,
+                      Status: 1,
+                      StatusDesc: chua hoan thanh,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-07T16:27:30.000Z",
+                      updatedAt: "2022-09-07T16:27:30.000Z",
+                      deletedAt: null,
+                    },
+                  ]
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: message err
   /job/{id}/editFormJob:
     get:
       tags:
@@ -832,7 +935,7 @@ paths:
                 status: "fail"
                 typeError: Token Error
                 statusError: Bad request
-                message: err verify jwterr verify jwt
+                message: err verify jwt
         500:
           description: Database Error
           content:
@@ -937,8 +1040,353 @@ paths:
                 typeError: Database Error
                 statusError: Internal Server Error
                 message: Delete fail !!! or formjob not found !!!
+  /review/createFormReview:
+    post:
+      tags:
+        - FormReview
+      summary: create FormReview
+      description: users create FormReview => id creator = id user
+      operationId: createFormReviewId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/FormReview"
+              required:
+                - Name
+                - Positioin
+                - Desc
+                - Type
+              example:
+                Name: danh gia cong viec thang 12
+                Position: Admin
+                Desc: abcabc abc abc
+                Type: danh gia
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              example:
+                Form:
+                  {
+                    id: 3,
+                    Name: danh gia thang 4,
+                    Position: inter,
+                    Desc: abc abc abc,
+                    Type: danh gia,
+                    IDNv: 1,
+                    IDCreator: 1,
+                    createdAt: "2022-09-09T17:00:33.000Z",
+                    updatedAt: "2022-09-09T17:08:22.000Z",
+                    deletedAt: null,
+                  }
+        400:
+          description: problem request !!! Name, Desc, StatusDesc is not exist
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Http error
+                statusError: Bad request
+                message: problem request !!!
+        500:
+          content:
+            application/json:
+              example:
+                errCode: 3
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: message err
+  /review/AllFormReview:
+    get:
+      tags:
+        - FormReview
+      summary: get All FormReview
+      description: get All FormReview
+      responses:
+        200:
+          description: success!!
+          content:
+            application/json:
+              example:
+                Forms:
+                  [
+                    {
+                      id: 3,
+                      Name: danh gia thang 4,
+                      Position: inter,
+                      Desc: abc abc abc,
+                      Type: danh gia,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-09T17:00:33.000Z",
+                      updatedAt: "2022-09-09T17:08:22.000Z",
+                      deletedAt: null,
+                    },
+                    {
+                      id: 5,
+                      Name: danh gia thang 5,
+                      Position: inter,
+                      Desc: abc abc abc,
+                      Type: danh gia,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-09T17:00:41.000Z",
+                      updatedAt: "2022-09-09T17:08:43.000Z",
+                      deletedAt: null,
+                    },
+                  ]
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: message err
+  /review/AllFormReviewUser:
+    get:
+      tags:
+        - FormReview
+      summary: get All FormReview by Id User in Access_TOken
+      description: verify jwt => id User in token => All FormJob
+      responses:
+        200:
+          description: success!!
+          content:
+            application/json:
+              example:
+                Forms:
+                  [
+                    {
+                      id: 3,
+                      Name: danh gia thang 4,
+                      Position: inter,
+                      Desc: abc abc abc,
+                      Type: danh gia,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-09T17:00:33.000Z",
+                      updatedAt: "2022-09-09T17:08:22.000Z",
+                      deletedAt: null,
+                    },
+                    {
+                      id: 5,
+                      Name: danh gia thang 5,
+                      Position: inter,
+                      Desc: abc abc abc,
+                      Type: danh gia,
+                      IDNv: 1,
+                      IDCreator: 1,
+                      createdAt: "2022-09-09T17:00:41.000Z",
+                      updatedAt: "2022-09-09T17:08:43.000Z",
+                      deletedAt: null,
+                    },
+                  ]
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: message err
+  /review/{id}/editFormReview:
+    get:
+      tags:
+        - FormReview
+      summary: user get infor FormReview
+      description: users get FormReview to edit
+      operationId: getEditFormReviewId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                FormReview:
+                  {
+                    id: 5,
+                    Name: danh gia thang 5,
+                    Position: inter,
+                    Desc: abc abc abc,
+                    Type: danh gia,
+                    IDNv: 1,
+                    IDCreator: 1,
+                    createdAt: "2022-09-09T17:00:41.000Z",
+                    updatedAt: "2022-09-09T17:08:43.000Z",
+                    deletedAt: null,
+                  }
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 4
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: formjob not found !!!
+  /review/{id}/updateFormReview:
+    put:
+      tags:
+        - FormReview
+      summary: user update FormReview
+      description: user update FormReview
+      operationId: updateFormReviewId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/FormReview"
+              required:
+                - Name
+                - Position
+                - Desc
+                - Type
+              example:
+                Name: thu viec 30
+                Position: abcabc abc abc
+                Desc: 0
+                Type: chu hoan thanh
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                Message: Update Success !!!
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwterr verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 3
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: update fail !!!
+  /review/{id}/deleteFormReview:
+    delete:
+      tags:
+        - FormReview
+      summary: user delete FormReview
+      description: user delete FormReview
+      operationId: updateFormReview
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              example:
+                Message: Delete success!!!
+        400:
+          content:
+            application/json:
+              example:
+                errCode: 1
+                status: "fail"
+                typeError: Token Error
+                statusError: Bad request
+                message: err verify jwterr verify jwt
+        500:
+          description: Database Error
+          content:
+            application/json:
+              example:
+                errCode: 2
+                status: "fail"
+                typeError: Database Error
+                statusError: Internal Server Error
+                message: Delete fail !!!
 components:
   schemas:
+    User:
+      title: User
+      type: object
+      properties:
+        MaNV:
+          type: string
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+        UserName:
+          type: string
+        Password:
+          type: string
+        Position:
+          type: string
+        Phone:
+          type: string
+        Gender:
+          type: string
+        CMND:
+          type: string
+        BHXH:
+          type: string
+        Address:
+          type: string
+        ManagerID:
+          type: integer
+        Role:
+          type: integer
     FormJob:
       title: FormJob
       type: object
@@ -957,11 +1405,11 @@ components:
       properties:
         Name:
           type: string
+        Position:
+          type: string
         Desc:
           type: string
-        Status:
-          type: integer
-        StatusDesc:
+        Type:
           type: string
     Roles:
       title: Roles

@@ -43,6 +43,22 @@ let getAllFormJob = () =>{
     })
 }
 
+let getAllFormJobByIdUser = (id) =>{
+    return new Promise( async (resolve, reject) => {
+        try {
+            let jobs = await db.Job.findAll({
+                where: {
+                    IDCreator: id,
+                },
+                raw: true,
+            })
+            resolve(jobs);
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 let editFormJob = (id) => {
     return new Promise( async (resolve, reject) => {
         try {
@@ -123,4 +139,5 @@ module.exports = {
     editFormJob: editFormJob,
     updateFormJob: updateFormJob,
     deleteFormJob: deleteFormJob,
+    getAllFormJobByIdUser: getAllFormJobByIdUser,
 }

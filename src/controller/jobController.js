@@ -125,6 +125,29 @@ let getAllFormJob = async ( req, res, next) => {
        })
 }
 
+let getAllFormJobByIdUser = async ( req, res, next) => {
+    let decodedUser={};
+    try {
+        decodedUser = await jwt.verify(
+            req.cookies.ACCESS_TOKEN,
+            process.env.ACCESS_TOKEN_SECRET_KEY
+        )
+    } catch (e) {
+        let err = HttpErrors.InvalidToken('err verify jwt', typeError.TOKEN_ERROR);
+        err.errCode = 1;
+        return next(err);        
+    }
+    jobService.getAllFormJobByIdUser(decodedUser.id)
+       .then((data) =>{
+            res.status(200).json(data);
+       })
+       .catch((err) => {
+            let error = HttpErrors.IODataBase(err.message);
+            error.errCode = 2;
+            next(error);
+       })
+}
+
 let editFormJob = async(req, res, next) => {
     // verify token => user
     // id user => all formJob
@@ -173,13 +196,23 @@ let updateformJob = async(req, res, next) => {
         err.errCode = 1;
         return next(err);        
     }
+    if(!req.params.id || !req.body.Name || !req.body.Desc || !req.body.StatusDesc) {
+        let err = HttpErrors.BadRequest('problem request !!!');
+        err.errCode = 2;
+        return next(err);
+    }
+    if(req.body.Status !=0 && req.body.Status != 1) {
+        let err = HttpErrors.BadRequest('problem request !!!');
+        err.errCode = 3;
+        return next(err);
+    }
     let check = await verifyFormJob(decodedUser.id, req.params.id);
     if(check) {
         data.id = req.params.id;
         data.Name = req.body.Name;
         data.Desc = req.body.Desc;
         data.StatusDesc = req.body.StatusDesc;
-        data.Status = req.Status;
+        data.Status = req.body.Status;
         await jobService.updateFormJob(data)
             .then((dataOutput) => {
                 if(dataOutput) {
@@ -188,13 +221,13 @@ let updateformJob = async(req, res, next) => {
                     })
                 } else {
                     let err = HttpErrors.IODataBase('update fail !!!');
-                    err.errCode = 2;
+                    err.errCode = 4;
                     return next(err);
                 }
             })
     } else {
         let error = HttpErrors.IODataBase('formjob not found !!!');
-        error.errCode = 3;
+        error.errCode = 5;
         return next(error);
     }
 }
@@ -254,5 +287,5 @@ let verifyFormJob = async function (idUser, idJob) {
 
 
 module.exports = {
-    index, createJob, createFromJob, getAllFormJob, editFormJob, updateformJob, deleteFormJob
+    index, createJob, createFromJob, getAllFormJob, editFormJob, updateformJob, deleteFormJob, getAllFormJobByIdUser
 }

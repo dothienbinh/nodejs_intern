@@ -242,6 +242,24 @@ let destroyUser = async (id) => {
     })
 }
 
+let restoreUser = (idUser) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            let tmp = await db.User.restore({
+                where: {
+                    id: idUser,
+                    deletedAt: {
+                        [Op.ne]: null
+                    }
+                }
+            })
+            resolve(tmp);
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 let getEditUser = async (id) => {
     return new Promise (async (resolve, reject) => {
         try {
@@ -476,5 +494,6 @@ module.exports = {
     updateImage: updateImage,
     saveToken: saveToken,
     getAllUserExist: getAllUserExist,
-    getEmailAdmin: getEmailAdmin
+    getEmailAdmin: getEmailAdmin,
+    restoreUser: restoreUser
 }
