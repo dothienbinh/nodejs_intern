@@ -43,6 +43,9 @@ User
 - tất cả đều là Employee được phép tự tạo và xem form cho chính mình
 - User nào chỉ có thể cập nhật avatar, UserName và Passowrd của chính nó
 
+## Desc
+![ImgDb](https://user-images.githubusercontent.com/84229533/189962129-a57018bf-8910-408c-85bc-96d8f28eea8b.png)
+
 ## database
 
 ![ImgDb](https://user-images.githubusercontent.com/84229533/183840686-e17ac9eb-d129-414b-a578-5076fa25f752.png)
